@@ -1,33 +1,41 @@
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
-
-from app.models import TrustShieldAction
 from app.server.environment import TrustShieldEnvironment
+from app.models import TrustShieldAction
 
-app = FastAPI(
-    title="TrustShield v1",
-    description="OpenEnv-based Trust & Safety investigation benchmark.",
-    version="0.1.0",
-)
+app = FastAPI(title="TrustShield v1")
 
-env = TrustShieldEnvironment()
-
+_env = TrustShieldEnvironment()
 
 @app.get("/")
-def home():
-    return RedirectResponse(url="/docs")
+def root():
+    return {
+        "name": "TrustShield v1",
+        "status": "ok",
+        "message": "OpenEnv Trust & Safety benchmark is running."
+    }
 
 
 @app.post("/reset")
 def reset():
-    return env.reset().model_dump()
+    result = _env.reset()
+    if hasattr(result, "model_dump"):
+        return result.model_dump()
+    return result
 
 
 @app.post("/step")
 def step(action: TrustShieldAction):
-    return env.step(action).model_dump()
+    result = _env.step(action)
+    if hasattr(result, "model_dump"):
+        return result.model_dump()
+    return result
 
 
 @app.get("/state")
 def get_state():
-    return env.get_state()
+    state = _env.get_state()
+    if hasattr(state, "model_dump"):
+        return state.model_dump()
+    if isinstance(state, dict):
+        return state
+    return vars(state)
