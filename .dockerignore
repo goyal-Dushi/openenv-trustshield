@@ -1,0 +1,43 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# macOS junk
+.DS_Store
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Test artifacts
+htmlcov/
+.coverage
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Local files
+.env
+.env.*
+*.log
+
+# Notebook junk
+.ipynb_checkpoints/
+
+# Large irrelevant files
+node_modules/
