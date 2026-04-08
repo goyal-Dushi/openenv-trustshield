@@ -1,86 +1,191 @@
 # TrustShield v1
 
-TrustShield v1 is an OpenEnv-based Trust & Safety investigation environment for a dating / matrimonial app.
-It turns a moderation case into a multi-step investigation benchmark where an AI agent must gather evidence, recognize risk, and choose the correct action.
+TrustShield v1 is an **OpenEnv-based Trust & Safety investigation benchmark** for a dating / matrimonial platform.
 
-## Problem statement
+Instead of treating moderation as a simple binary spam classification task, this environment models it as a **multi-step decision-making problem**:
 
-Dating and matrimonial platforms need more than binary spam filters. TrustShield tests whether an agent can:
+- inspect a user profile,
+- review chat behavior,
+- uncover hidden risk signals,
+- and choose the correct moderation action.
 
-- investigate suspicious profiles and chat behavior,
-- gather evidence efficiently,
+It is designed for **benchmarking agents**, **rule-based systems**, and future **AI moderation policies**.
+
+---
+
+## Overview
+
+Moderation on dating and matrimonial apps often requires more than detecting obvious spam.
+
+A suspicious user may:
+
+- push the conversation off-platform,
+- request money,
+- manipulate emotions,
+- impersonate family or identity,
+- or appear mostly normal while still being risky.
+
+TrustShield simulates this moderation workflow as an environment where a policy must decide:
+
+> **What should I investigate next, and when do I take action?**
+
+---
+
+## What this environment evaluates
+
+TrustShield v1 tests whether a system can:
+
+- gather relevant evidence efficiently,
+- identify risk categories,
+- avoid unnecessary or repeated investigation,
 - and select the right moderation outcome.
 
-## Why this environment matters
+This makes it closer to a **decision-making benchmark** than a traditional classifier.
 
-This environment is built for hackathons and RL research. It simulates real investigation workflows rather than a single spam classifier, making it a better benchmark for moderation decision-making.
+---
 
-## Skill being tested
+## Benchmark objective
 
-- evidence collection
-- risk prioritization
-- moderation decision quality
-- efficiency in investigation steps
-- avoiding unnecessary escalation
+The goal is to solve each moderation case by balancing:
 
-## State, actions, and reward summary
+- **investigation quality**
+- **decision correctness**
+- **efficiency**
+- **risk awareness**
 
-- state: investigation case, risk flags, and raw profile/chat data
-- observations: partial profile/chat summaries, revealed signals, step count, and reward feedback
-- actions: review profile/chat, check identity/financial/off-platform risk, request human review, mark legit, flag suspicious, ban user
-- reward: base step penalty plus bonuses for helpful checks and correct final decisions
+An ideal policy should:
 
-## Local setup
+- inspect only what is necessary,
+- uncover meaningful warning signals,
+- and make the correct final moderation decision.
 
-This project uses `uv` for dependency management when available.
+---
 
-```bash
-uv install
-```
+## Environment design
 
-If you do not use `uv`, install dependencies manually in your Python environment.
+Each episode represents **one moderation case**.
 
-## Run instructions
+The environment exposes only **partial information initially**, and more evidence is revealed when the agent takes investigative actions.
 
-Start the API server locally:
+### Initial visible evidence
 
-```bash
-uv run uvicorn app.server.app:app --host 127.0.0.1 --port 8000
-```
+An agent begins with:
 
-Then open your browser or use the agents against:
+- visible profile summary
+- visible chat summary
+- a small number of revealed signals
+- current step count
+- case status
+
+### Hidden evidence
+
+Additional risk indicators can be uncovered through actions such as:
+
+- reviewing the profile
+- reviewing the chat
+- checking identity risk
+- checking financial scam risk
+- checking off-platform movement risk
+
+---
+
+## Action space
+
+The agent can take the following actions:
+
+### Investigation actions
+
+- `review_profile`
+- `review_chat`
+- `check_identity_risk`
+- `check_financial_risk`
+- `check_offplatform_risk`
+
+### Final moderation actions
+
+- `mark_legit`
+- `flag_suspicious`
+- `ban_user`
+- `request_human_review`
+
+---
+
+## Reward design
+
+The reward structure encourages useful investigation and penalizes poor moderation behavior.
+
+### Positive reward examples
+
+- uncovering relevant hidden evidence
+- selecting the correct final moderation outcome
+- resolving a case efficiently
+
+### Negative reward examples
+
+- repeated or redundant investigation
+- unnecessary steps
+- incorrect final moderation decisions
+
+This makes the benchmark suitable for:
+
+- rule-based baselines
+- planning agents
+- RL-style experimentation
+- LLM-powered decision systems
+
+---
+
+## Cases included
+
+TrustShield v1 currently includes **6 handcrafted moderation cases** across different difficulty levels.
+
+### Case categories covered
+
+- financial scam
+- impersonation / identity mismatch
+- off-platform lure
+- emotional manipulation
+- suspicious-but-uncertain behavior
+- legitimate user behavior
+
+### Difficulty levels
+
+- **easy**
+- **medium**
+- **hard**
+
+---
+
+## Example benchmark cases
+
+Examples include users who:
+
+- ask for money through emotional trust-building,
+- push users to WhatsApp or Telegram too early,
+- present inconsistent family / profile / chat claims,
+- or appear mostly legitimate with subtle ambiguity.
+
+This allows the environment to test not only **obvious spam detection**, but also **moderation judgment**.
+
+---
+
+## Project structure
 
 ```text
-http://127.0.0.1:8000
-```
-
-## Docker instructions
-
-Build the Docker image:
-
-```bash
-docker build -t trustshield-v1 .
-```
-
-Run the container:
-
-```bash
-docker run --rm -p 8000:8000 trustshield-v1
-```
-
-## Agents
-
-- `python agents/random_agent.py` runs a random action agent against the local API.
-- `python agents/rule_based_agent.py` runs a simple heuristic investigator that reviews evidence and chooses a final moderation action.
-
-## Testing
-
-Run the small pytest suite:
-
-```bash
-pytest
-```
-
-## Benchmark value
-
-TrustShield v1 is an interesting benchmark because it rewards agents for learning when to investigate versus when to decide. It encourages reasoning over chat and profile evidence, not only classification.
+trustshield-v1/
+├── app/
+│   ├── models.py
+│   ├── tasks.py
+│   └── server/
+│       ├── app.py
+│       └── environment.py
+├── agents/
+│   ├── random_agent.py
+│   └── rule_based_agent.py
+├── tests/
+│   └── test_environment.py
+├── grader.py
+├── inference.py
+├── Dockerfile
+├── pyproject.toml
+└── README.md
