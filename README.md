@@ -1,3 +1,13 @@
+---
+title: TrustShield v1
+emoji: 🛡️
+colorFrom: blue
+colorTo: purple
+sdk: docker
+pinned: false
+license: mit
+---
+
 # TrustShield v1
 
 TrustShield v1 is an **OpenEnv-based Trust & Safety investigation benchmark** for a dating / matrimonial platform.
