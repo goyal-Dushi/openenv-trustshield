@@ -7,7 +7,11 @@ import re
 import textwrap
 from typing import List, Optional
 
-from openai import OpenAI
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
 
 from app.server.environment import TrustShieldEnvironment
 from app.tasks import list_tasks
@@ -276,6 +280,9 @@ def get_model_action(
     state: dict,
     history: List[str],
 ) -> str:
+    if not OPENAI_AVAILABLE or client is None:
+        return heuristic_fallback(state, observation)
+
     user_prompt = build_user_prompt(task_name, step, observation, state, history)
 
     try:
@@ -444,14 +451,20 @@ def run_single_task(client: OpenAI, task_name: str) -> dict:
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
-# =========================================================
-# Main
-# =========================================================
 async def main() -> None:
-    client = OpenAI(
-        base_url=API_BASE_URL,
-        api_key=HF_TOKEN,
-    )
+    client = None
+
+    if OPENAI_AVAILABLE and HF_TOKEN:
+        try:
+            client = OpenAI(
+                base_url=API_BASE_URL,
+                api_key=HF_TOKEN,
+            )
+        except Exception as e:
+            print(f"[WARN] OpenAI init failed: {e}", flush=True)
+            client = None
+    else:
+        print("[INFO] Running without OpenAI. Using heuristic policy.", flush=True)
 
     if TASK_NAME:
         tasks = [TASK_NAME]
