@@ -7,14 +7,11 @@ import re
 import textwrap
 from typing import List, Optional
 
-from dotenv import load_dotenv
 from openai import OpenAI
 
 from app.server.environment import TrustShieldEnvironment
 from app.tasks import list_tasks
 from grader import grade_episode
-
-load_dotenv()
 
 # =========================
 # Required env variables
