@@ -26,15 +26,13 @@ def root():
 
 
 @app.post("/reset")
-def reset(req: ResetRequest):
+def reset(task_name: Optional[str] = None):
     global _env
     try:
         _env = TrustShieldEnvironment(seed=42)
-
-        result = _env.reset(task_name=req.task_name)
-
+        result = _env.reset(task_name=task_name)
+        
         return result.model_dump()
-
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
