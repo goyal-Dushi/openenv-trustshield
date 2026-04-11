@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  trustshield:
+    image: trustshield:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    volumes:
+      - .:/app
+    container_name: trustshield_app
+    command: uv run uvicorn app.server.app:app --host 0.0.0.0 --port 7860

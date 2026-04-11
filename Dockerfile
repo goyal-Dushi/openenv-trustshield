@@ -1,27 +1,25 @@
 FROM python:3.11-slim
 
-# Python runtime settings
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-# Install uv only
+# install uv
 RUN pip install --no-cache-dir uv
 
-# Install project dependencies
+# copy dependency files first
 COPY pyproject.toml ./
 COPY uv.lock* ./
 
+# install deps into local venv
 RUN uv sync --no-dev
 
-# Copy application source after dependencies
+# copy source code
 COPY app ./app
-COPY agents ./agents
 COPY inference.py ./
 COPY grader.py ./
-COPY pytest.ini ./
 COPY README.md ./
 
 EXPOSE 7860
