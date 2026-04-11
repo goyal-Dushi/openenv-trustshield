@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir uv
 
 # copy dependency files first
 COPY pyproject.toml ./
+COPY requirements.txt ./
 COPY uv.lock* ./
 
 # install deps into local venv

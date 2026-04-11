@@ -1,0 +1,6 @@
+openai
+fastapi
+uvicorn
+pydantic
+requests
+openenv-core==0.2.3
