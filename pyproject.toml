@@ -5,6 +5,7 @@ description = "TrustShield is a Trust & Safety investigation benchmark based on 
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.95.0",
+    "openai>=2.30.0",
     "openenv-core==0.2.3",
     "pydantic>=2.12.5",
     "python-dotenv>=1.0.0",
