@@ -66,6 +66,11 @@ class TrustShieldEnvironment(Env):
         self._reveal_initial_signals()
         return self._build_observation(last_action=None, reward=0.0)
 
+    def get_state(self) -> dict[str, Any]:
+        if self._state is None:
+            raise ValueError("Environment has not been reset yet.")
+        return self._state
+
     def _coerce_action(self, action: str | TrustShieldAction | dict[str, str]) -> TrustShieldAction:
         if isinstance(action, TrustShieldAction):
             return action
@@ -129,6 +134,8 @@ class TrustShieldEnvironment(Env):
         )
 
     def _build_profile_summary(self) -> str:
+        if self._case is None:
+            return ""
         profile = self._case["profile"]
         summary = f"{profile['name']}, {profile['age']}, {profile['location']}. {profile['headline']}"
         if self._state.profile_reviewed:
@@ -136,6 +143,8 @@ class TrustShieldEnvironment(Env):
         return summary
 
     def _build_chat_summary(self) -> str:
+        if self._case is None:
+            return ""
         chat = self._case["chat_history"]
         if self._state.chat_reviewed:
             summary = " | ".join(chat)
