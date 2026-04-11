@@ -1,0 +1,48 @@
+name: trustshield-v1
+description: Multi-step trust & safety moderation benchmark for dating platforms
+version: 1.0.0
+
+# Entry point for environment
+entrypoint: app.server.environment:TrustShieldEnvironment
+
+# Observation + Action specs (high-level for validator)
+observation_space:
+  type: dict
+  description: Partial observable moderation case state including profile, chat summary, and revealed signals
+
+action_space:
+  type: discrete
+  actions:
+    - review_profile
+    - review_chat
+    - check_identity_risk
+    - check_financial_risk
+    - check_offplatform_risk
+    - request_human_review
+    - mark_legit
+    - flag_suspicious
+    - ban_user
+
+# Task definitions
+tasks:
+  - easy_spam_financial
+  - easy_spam_impersonation
+  - medium_suspicious_emotional
+  - medium_suspicious_profile_mismatch
+  - hard_legit_engineer
+  - hard_legit_teacher
+
+# Evaluation
+evaluation:
+  grader: grader:grade_episode
+
+# Runtime config
+runtime:
+  python_version: "3.11"
+
+# Optional metadata
+tags:
+  - trust-safety
+  - moderation
+  - multi-step-reasoning
+  - llm-agents

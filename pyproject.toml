@@ -1,7 +1,7 @@
 [project]
-name = "trustshield-v1"
+name = "trustshield"
 version = "0.1.0"
-description = "TrustShield v1 is a Trust & Safety investigation benchmark based on OpenEnv."
+description = "TrustShield is a Trust & Safety investigation benchmark based on OpenEnv."
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.95.0",
@@ -11,7 +11,8 @@ dependencies = [
     "requests>=2.33.1",
     "uvicorn>=0.22.0",
 ]
-
+[project.scripts]
+server = "app.server.main:main"
 [dependency-groups]
 dev = [
     "pytest>=8.2.0",
