@@ -20,6 +20,7 @@ RUN uv sync --no-dev
 COPY app ./app
 COPY inference.py ./
 COPY grader.py ./
+COPY server ./server
 COPY README.md ./
 
 EXPOSE 7860
