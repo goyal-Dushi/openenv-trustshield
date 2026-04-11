@@ -1,5 +1,5 @@
 ---
-title: TrustShield v1
+title: TrustShield 
 emoji: 🛡️
 colorFrom: blue
 colorTo: purple
@@ -8,194 +8,163 @@ pinned: false
 license: mit
 ---
 
-# TrustShield v1
+# TrustShield 
 
-TrustShield v1 is an **OpenEnv-based Trust & Safety investigation benchmark** for a dating / matrimonial platform.
+TrustShield  is an **OpenEnv-based Trust & Safety investigation benchmark** for a dating / matrimonial platform.
 
-Instead of treating moderation as a simple binary spam classification task, this environment models it as a **multi-step decision-making problem**:
-
-- inspect a user profile,
-- review chat behavior,
-- uncover hidden risk signals,
-- and choose the correct moderation action.
-
-It is designed for **benchmarking agents**, **rule-based systems**, and future **AI moderation policies**.
+Instead of treating moderation as a simple binary spam classification task, this environment models it as a **multi-step decision-making problem**.
 
 ---
 
-## Overview
+# 🧠 Environment Overview & Motivation
 
-Moderation on dating and matrimonial apps often requires more than detecting obvious spam.
+Moderation in dating and matrimonial platforms is inherently complex and **cannot be reduced to a single classification step**.
 
 A suspicious user may:
-
-- push the conversation off-platform,
+- gradually build trust,
+- shift conversations off-platform,
 - request money,
-- manipulate emotions,
-- impersonate family or identity,
-- or appear mostly normal while still being risky.
+- impersonate identity,
+- or behave ambiguously.
 
-TrustShield simulates this moderation workflow as an environment where a policy must decide:
+Traditional systems fail because they:
+- lack multi-step reasoning
+- cannot handle uncertainty
+- overfit to obvious spam signals
 
-> **What should I investigate next, and when do I take action?**
+### 💡 Motivation
 
----
+TrustShield reframes moderation as:
 
-## What this environment evaluates
+> **A sequential decision-making problem under uncertainty**
 
-TrustShield v1 tests whether a system can:
+An agent must:
+- decide **what to investigate**
+- gather **incremental evidence**
+- and choose the **correct moderation action**
 
-- gather relevant evidence efficiently,
-- identify risk categories,
-- avoid unnecessary or repeated investigation,
-- and select the right moderation outcome.
-
-This makes it closer to a **decision-making benchmark** than a traditional classifier.
-
----
-
-## Benchmark objective
-
-The goal is to solve each moderation case by balancing:
-
-- **investigation quality**
-- **decision correctness**
-- **efficiency**
-- **risk awareness**
-
-An ideal policy should:
-
-- inspect only what is necessary,
-- uncover meaningful warning signals,
-- and make the correct final moderation decision.
+This makes it suitable for:
+- LLM agents
+- rule-based systems
+- reinforcement learning setups
 
 ---
 
-## Environment design
+# 🔍 Observation Space
 
-Each episode represents **one moderation case**.
+Each step returns a structured observation:
 
-The environment exposes only **partial information initially**, and more evidence is revealed when the agent takes investigative actions.
+### Initial Observation
+- `case_id`
+- `visible_profile_summary`
+- `visible_chat_summary`
+- `revealed_signals` (partial)
+- `step_count`
+- `done`
+- `case_status`
 
-### Initial visible evidence
+### Dynamic Observation (after actions)
+- additional `revealed_signals`
+- updated `reward`
+- `last_action`
 
-An agent begins with:
-
-- visible profile summary
-- visible chat summary
-- a small number of revealed signals
-- current step count
-- case status
-
-### Hidden evidence
-
-Additional risk indicators can be uncovered through actions such as:
-
-- reviewing the profile
-- reviewing the chat
-- checking identity risk
-- checking financial scam risk
-- checking off-platform movement risk
+👉 The environment starts **partially observable** and reveals more information over time.
 
 ---
 
-## Action space
+# ⚙️ Action Space
 
-The agent can take the following actions:
+The agent can take **9 discrete actions**:
 
-### Investigation actions
-
+## 🔎 Investigation Actions
 - `review_profile`
 - `review_chat`
 - `check_identity_risk`
 - `check_financial_risk`
 - `check_offplatform_risk`
 
-### Final moderation actions
-
+## 🚨 Final Moderation Actions
 - `mark_legit`
 - `flag_suspicious`
 - `ban_user`
 - `request_human_review`
 
----
-
-## Reward design
-
-The reward structure encourages useful investigation and penalizes poor moderation behavior.
-
-### Positive reward examples
-
-- uncovering relevant hidden evidence
-- selecting the correct final moderation outcome
-- resolving a case efficiently
-
-### Negative reward examples
-
-- repeated or redundant investigation
-- unnecessary steps
-- incorrect final moderation decisions
-
-This makes the benchmark suitable for:
-
-- rule-based baselines
-- planning agents
-- RL-style experimentation
-- LLM-powered decision systems
+👉 The agent must balance:
+- exploration (gather evidence)
+- exploitation (take correct action)
 
 ---
 
-## Cases included
+# 🎯 Task Descriptions & Difficulty Levels
 
-TrustShield v1 currently includes **6 handcrafted moderation cases** across different difficulty levels.
+TrustShield  includes **6 handcrafted cases** across 3 difficulty levels:
 
-### Case categories covered
+## 🟢 Easy
+- **easy_spam_financial**
+- **easy_spam_impersonation**
 
-- financial scam
-- impersonation / identity mismatch
-- off-platform lure
-- emotional manipulation
-- suspicious-but-uncertain behavior
-- legitimate user behavior
-
-### Difficulty levels
-
-- **easy**
-- **medium**
-- **hard**
+👉 Clear signals (money requests, impersonation)  
+👉 Expected: **quick detection + correct ban**
 
 ---
 
-## Example benchmark cases
+## 🟡 Medium
+- **medium_suspicious_emotional**
+- **medium_suspicious_profile_mismatch**
 
-Examples include users who:
-
-- ask for money through emotional trust-building,
-- push users to WhatsApp or Telegram too early,
-- present inconsistent family / profile / chat claims,
-- or appear mostly legitimate with subtle ambiguity.
-
-This allows the environment to test not only **obvious spam detection**, but also **moderation judgment**.
+👉 Mixed / ambiguous signals  
+👉 Expected:  
+- `flag_suspicious` OR  
+- `request_human_review`
 
 ---
 
-## Project structure
+## 🔴 Hard
+- **hard_legit_engineer**
+- **hard_legit_teacher**
 
-```text
-trustshield-v1/
-├── app/
-│   ├── models.py
-│   ├── tasks.py
-│   └── server/
-│       ├── app.py
-│       └── environment.py
-├── agents/
-│   ├── random_agent.py
-│   └── rule_based_agent.py
-├── tests/
-│   └── test_environment.py
-├── grader.py
-├── inference.py
-├── Dockerfile
-├── pyproject.toml
-└── README.md
+👉 Legitimate users with subtle ambiguity  
+👉 Expected:
+- `mark_legit` OR cautious review  
+❗ Penalizes **false positives (wrong bans)**
+
+---
+
+# 🏗️ Environment Design
+
+Each episode:
+1. Starts with partial information
+2. Agent performs step-by-step investigation
+3. Evidence is revealed incrementally
+4. Agent takes a final moderation decision
+
+---
+
+# 💰 Reward Design
+
+The reward function encourages:
+
+### ✅ Positive Rewards
+- uncovering meaningful signals
+- correct final decision
+- efficient investigation
+
+### ❌ Negative Rewards
+- redundant steps
+- unnecessary actions
+- incorrect final decision (especially false bans)
+
+---
+
+# 🧪 Grading & Evaluation
+
+Evaluation is handled by `grader.py`.
+
+Each episode returns:
+
+```json
+{
+  "score": 0.95,
+  "passed": true,
+  "reasoning": ["Final decision matches ideal resolution"]
+}
