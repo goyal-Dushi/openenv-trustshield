@@ -1,51 +1,72 @@
 from fastapi import FastAPI, HTTPException
-from app.server.environment import TrustShieldEnvironment
-from app.models import TrustShieldAction
+from pydantic import BaseModel
+from typing import Optional
 import traceback
+
+from app.server.environment import TrustShieldEnvironment
 
 app = FastAPI(title="TrustShield")
 
-_env = TrustShieldEnvironment()
+_env: Optional[TrustShieldEnvironment] = None
+
+class ResetRequest(BaseModel):
+    task_name: Optional[str] = None
+
+
+class StepRequest(BaseModel):
+    action: str
 
 @app.get("/")
 def root():
     return {
         "name": "TrustShield",
         "status": "ok",
-        "message": "OpenEnv Trust & Safety benchmark is running."
+        "message": "OpenEnv Trust & Safety benchmark is running.",
     }
 
+
 @app.post("/reset")
-def reset():
+def reset(req: ResetRequest):
+    global _env
     try:
-        result = _env.reset()
-        if hasattr(result, "model_dump"):
-            return result.model_dump()
-        return result
+        _env = TrustShieldEnvironment(seed=42)
+
+        result = _env.reset(task_name=req.task_name)
+
+        return result.model_dump()
+
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/step")
-def step(action: TrustShieldAction):
+def step(req: StepRequest):
+    global _env
+
+    if _env is None:
+        raise HTTPException(status_code=400, detail="Environment not initialized. Call /reset first.")
+
     try:
-        result = _env.step(action)
-        if hasattr(result, "model_dump"):
-            return result.model_dump()
-        return result
+        result = _env.step(req.action)
+
+        return result.model_dump()
+
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/state")
 def get_state():
+    global _env
+
+    if _env is None:
+        raise HTTPException(status_code=400, detail="Environment not initialized.")
+
     try:
-        state = _env.get_state()
-        if hasattr(state, "model_dump"):
-            return state.model_dump()
-        if isinstance(state, dict):
-            return state
-        return vars(state)
+        return _env.state.model_dump()
+
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
