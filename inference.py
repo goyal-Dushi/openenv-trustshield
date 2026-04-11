@@ -19,7 +19,7 @@ load_dotenv()
 # =========================
 # Required env variables
 # =========================
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
+HF_TOKEN = os.getenv("HF_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-7B-Instruct")
 TASK_NAME = os.getenv("TRUSTSHIELD_TASK")  # optional single-task run
@@ -453,7 +453,7 @@ def run_single_task(client: OpenAI, task_name: str) -> dict:
 async def main() -> None:
     client = OpenAI(
         base_url=API_BASE_URL,
-        api_key=API_KEY,
+        api_key=HF_TOKEN,
     )
 
     if TASK_NAME:
