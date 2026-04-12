@@ -6,24 +6,18 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-# install uv
-RUN pip install --no-cache-dir uv
-
 # copy dependency files first
-COPY pyproject.toml ./
 COPY requirements.txt ./
-COPY uv.lock* ./
 
 # install deps into local venv
-RUN uv sync --no-dev
+RUN pip install --no-cache-dir -r requirements.txt
 
 # copy source code
 COPY app ./app
 COPY inference.py ./
 COPY grader.py ./
 COPY server ./server
-COPY README.md ./
 
 EXPOSE 7860
 
-CMD ["uv", "run", "uvicorn", "app.server.app:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "app.server.app:app", "--host", "0.0.0.0", "--port", "7860"]
